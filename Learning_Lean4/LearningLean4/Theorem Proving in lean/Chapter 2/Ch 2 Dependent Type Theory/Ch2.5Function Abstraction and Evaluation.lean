@@ -28,7 +28,7 @@ def g (s : String) : Bool := s.length > 0
 #check fun x : Nat => g (f x)  -- Nat → Bool
 #check fun x => g (f x)        -- Nat → Bool
 
-#check fun x : Int => x   
+#check fun x : Int => x
 
 
 -- Think about what these expressions mean. The expression fun x : Nat => x denotes the identity function on Nat,
@@ -37,7 +37,7 @@ def g (s : String) : Bool := s.length > 0
 --  You can, in general, leave off the type annotation and let Lean infer it for you. So, for example,
 --  you can write fun x => g (f x) instead of fun x : Nat => g (f x).
 --_
--- What is the difference between def and fun? Essentially none, it is like a lambda absraction. Same is true for 
+-- What is the difference between def and fun? Essentially none, it is like a lambda absraction. Same is true for
 -- 'proofs' of theorems.
 --_
 -- You can pass functions as parameters and by giving them names f and g you can then use those functions
@@ -51,26 +51,26 @@ def g (s : String) : Bool := s.length > 0
 
 #check fun (α β γ : Type) (g : β → γ) (f : α → β) (x : α) => g (f x)
 
--- The last expression, for example, denotes the function that takes three types, α, β, and γ, 
--- and two functions, g : β → γ and f : α → β, and returns the composition of g and f. 
+-- The last expression, for example, denotes the function that takes three types, α, β, and γ,
+-- and two functions, g : β → γ and f : α → β, and returns the composition of g and f.
 
--- (Making sense of the type of this function requires an understanding of dependent products, 
+-- (Making sense of the type of this function requires an understanding of dependent products,
 -- which will be explained below.)
 
 
 
--- The general form of a lambda expression is fun x : α => t, where the variable x is a "bound variable": 
+-- The general form of a lambda expression is fun x : α => t, where the variable x is a "bound variable":
 -- it is really a placeholder, whose "scope" does not extend beyond the expression t.
 --  For example, the variable b in the expression fun (b : β) (x : α) => b has nothing to do with the constant b declared earlier.
 --   In fact, the expression denotes the same function as fun (u : β) (z : α) => u.
 
--- Formally, expressions that are the same up to a renaming of bound variables are called alpha equivalent, 
+-- Formally, expressions that are the same up to a renaming of bound variables are called alpha equivalent,
 -- and are considered "the same." Lean recognizes this equivalence.
 
 -- Related to the univalence? and curry howard isomorphism?
 
--- Notice that applying a term t : α → β to a term s : α yields an expression t s : β. 
--- Returning to the previous example and renaming bound variables for clarity, 
+-- Notice that applying a term t : α → β to a term s : α yields an expression t s : β.
+-- Returning to the previous example and renaming bound variables for clarity,
 -- notice the types of the following expressions:
 
 #check (fun x : Nat => x) 1     -- Nat
