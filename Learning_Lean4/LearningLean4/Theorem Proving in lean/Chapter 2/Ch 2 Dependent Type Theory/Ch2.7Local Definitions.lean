@@ -46,5 +46,6 @@ def t (x : Nat) : Nat :=
 /-
   def bar := (fun a => fun x : a => x + 2) Nat
 -/
- -- The type of def bar is illdefined, it is a dependent arrow from space of a -> (a -> Nat), applied to
+ -- The type of def bar is illdefined, it is a dependent arrow from space of a -> (a -> Nat) -> Nat, applied to
  -- any type?
+ 
