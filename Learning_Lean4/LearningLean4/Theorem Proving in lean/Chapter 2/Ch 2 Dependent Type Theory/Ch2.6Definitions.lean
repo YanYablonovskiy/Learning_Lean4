@@ -104,3 +104,4 @@ def square (x : Nat) : Nat :=
   x * x
 
 #eval compose Nat Nat Nat double square 3  -- 18
+#check compose
