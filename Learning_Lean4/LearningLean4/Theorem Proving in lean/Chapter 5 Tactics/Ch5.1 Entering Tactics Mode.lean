@@ -239,8 +239,8 @@ Lean also provides the "bullet" notation . <tactics> (or · <tactics>) for struc
 -/
 
 theorem test₉ (p q : Prop) (hp : p) (hq : q) : p ∧ q ∧ p := by
-  apply And.intro
-  . exact hp
-  . apply And.intro
-    . exact hq
-    . exact hp
+  apply And.intro --finds a 'suffices' using and intro
+  . exact hp --proves hp for the suffices
+  . apply And.intro -- finds a 'suffices; using And.intro for p ∧ q
+    . exact hq --proves q with hq
+    . exact hp --proves p with hp
