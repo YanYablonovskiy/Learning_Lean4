@@ -68,8 +68,8 @@ fun a:α =>
 
 example : (∀ x, p x ∨ r) ↔ (∀ x, p x) ∨ r :=
  have mp:(∀ x, p x ∨ r) → (∀ x, p x) ∨ r := fun h1:_ => Or.elim (Classical.em r) (fun h2:_ => Or.intro_right (∀ x, p x) h2)
-                                                   (fun h3:_ => Or.elim (Classical.em (∀ x, p x)) (fun h₄:_ => Or.intro_left r h₄) (fun h₅:_ => False.elim
-                                                                                                                                              sorry))
+                                                   (fun h3:_ => Or.intro_left r (fun x:α => ((h1 x).elim (fun px:p x => px) (fun hr:r => @False.elim (p x) (h3 hr)))))
+                                                                                                                                              
  have mpr:(∀ x, p x) ∨ r →  (∀ x, p x ∨ r) :=
   fun p₁:_ => p₁.elim (fun (q₁:_) => fun (x:α) => Or.intro_left r (q₁ x)) (fun (q₂:r) => fun (x:α) => Or.intro_right (p x) q₂)
  show (∀ x, p x ∨ r) ↔ (∀ x, p x) ∨ r from Iff.intro mp mpr
@@ -197,7 +197,9 @@ show (¬ ∃ x, p x) ↔ (∀ x, ¬ p x) from Iff.intro mp mpr
 
 example : (¬ ∀ x, p x) ↔ (∃ x, ¬ p x) :=
 have mp: (¬ ∀ x, p x) → (∃ x, ¬ p x) :=
- fun (f₁:(¬ ∀ x, p x)) => sorry
+ fun (f₁:(¬ ∀ x, p x)) => (Classical.em  (∀ x, p x)).elim
+                          (fun l:_ => False.elim (f₁ l))
+                          (sorry)
 have mpr: (∃ x, ¬ p x) → (¬ ∀ x, p x) :=
  fun (b₁:_) => ( fun (hax: ∀ x, p x) => Exists.elim b₁ (fun x => fun hx => hx (hax x)) )
 show (¬ ∀ x, p x) ↔ (∃ x, ¬ p x) from Iff.intro mp mpr
@@ -211,18 +213,19 @@ show  (∀ x, p x → r) ↔ (∃ x, p x) → r from Iff.intro mp mpr
 
 
 example (a : α) : (∃ x, p x → r) ↔ (∀ x, p x) → r :=
-have mp:(∃ x, p x → r) → (∀ x, p x) → r := 
+have mp:(∃ x, p x → r) → (∀ x, p x) → r :=
  fun f₁:_ => fun f₂:_ => f₁.elim fun (x:α) => fun (h:_) => h (f₂ x)
 have mpr:((∀ x, p x) → r) → (∃ x, p x → r) :=
- fun b₁: ((∀ x, p x) → r) => fun b₂: ¬(∃ x, p x → r) => fun h:α → p => sorry
+ fun b₁: ((∀ x, p x) → r) => sorry
+ 
 show (∃ x, p x → r) ↔ (∀ x, p x) → r from Iff.intro mp mpr
 
 
-example (a : α) : (∃ x, r → p x) ↔ (r → ∃ x, p x) := 
+example (a : α) : (∃ x, r → p x) ↔ (r → ∃ x, p x) :=
  have mp:(∃ x, r → p x) → r → ∃ x, p x :=
   fun f₁:(∃ x, r → p x) => fun hr:r => f₁.elim (λ x => λ rpx => Exists.intro x (rpx hr))
- have mpr: (r → ∃ x, p x) → (∃ x, r → p x) := 
-  fun b₁:(r → ∃ x, p x) => sorry
+ have mpr: (r → ∃ x, p x) → (∃ x, r → p x) :=
+  fun b₁₁:_ => sorry
  show (∃ x, r → p x) ↔ (r → ∃ x, p x) from Iff.intro mp mpr
 
 
