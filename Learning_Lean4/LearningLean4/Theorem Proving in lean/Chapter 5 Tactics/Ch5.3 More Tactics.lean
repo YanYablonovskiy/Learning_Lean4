@@ -174,3 +174,163 @@ example (p q r : Prop) : p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r) := by
     | inr hpr =>
       cases hpr with
       | intro hp hr => constructor; exact hp; apply Or.inr; exact hr
+
+/-
+You will see in Chapter Inductive Types that these tactics are quite general.
+
+The cases tactic can be used to decompose any element of an inductively defined type;
+constructor always applies the first applicable constructor of an inductively defined type.
+
+For example, you can use cases and constructor with an existential quantifier:
+-/
+example (p q : Nat → Prop) : (∃ x, p x) → ∃ x, p x ∨ q x := by
+  intro h --introducing (∃x, p x)
+  cases h with --case of inductively defined existence type; if for all x px implies p x ∨ q x
+  | intro x px => constructor; apply Or.inl; exact px --constructor uses apply Exists.intro
+
+--my versions,
+
+example (p q : Nat → Prop) : (∃ x, p x) → ∃ x, p x ∨ q x := by
+  intro h --introducing (∃x, p x)
+  cases h with --case of inductively defined existence type; if for all x px implies p x ∨ q x
+  | intro x px => apply Exists.intro; apply Or.inl; apply px
+
+/-
+Here, the constructor tactic leaves the first component of the existential assertion, the value of x, implicit.
+
+It is represented by a metavariable, which should be instantiated later on.
+
+In the previous example, the proper value of the metavariable is determined by the tactic exact px,
+since px has type p x.
+
+If you want to specify a witness to the existential quantifier explicitly, you can use the exists tactic instead:
+-/
+
+example (p q : Nat → Prop) : (∃ x, p x) → ∃ x, p x ∨ q x := by
+  intro h
+  cases h with
+  | intro x px => exists x; apply Or.inl; exact px
+
+-- my version
+
+example (p q : Nat → Prop) : (∃ x, p x) → ∃ x, p x ∨ q x := by
+  intro h
+  apply Exists.elim h
+  intro a hpa
+  apply Exists.intro a --keeping constructor explicit
+  apply Or.inl
+  apply hpa
+
+/-
+Here is another example:
+-/
+example (p q : Nat → Prop) : (∃ x, p x ∧ q x) → ∃ x, q x ∧ p x := by
+  intro h --introducing h:(∃ x, p x ∧ q x)
+  cases h with --introducing cases; case is for all x:Nat , goal  p x ∧ q x → ∃ x, q x ∧ p x
+  | intro x hpq =>
+    cases hpq with --entering cases for And, which has one case having both p and q
+    | intro hp hq =>
+      exists x --applying exists intro
+
+/-
+These tactics can be used on data just as well as propositions.
+
+In the next example, they are used to define functions which swap the components of the product and sum types:
+-/
+def swap_pair : α × β → β × α := by --conjunction
+  intro p
+  cases p
+  constructor <;> assumption
+
+def swap_sum : Sum α β → Sum β α := by  --disjunction
+  intro p
+  cases p
+  . apply Sum.inr; assumption
+  . apply Sum.inl; assumption
+
+--my versions
+
+def swap_pair_tctless : α × β → β × α :=  --conjunction
+  fun (h:α × β) => (h.2,h.1)
+
+def swap_pair_tctless₁ (h: α × β):β × α := (h.2,h.1)
+
+#print swap_pair_tctless
+#print swap_pair_tctless₁
+
+def swap_sum_tctless: Sum α β → Sum β α :=
+ fun (h:Sum α β) => if x:(h.getLeft?.isSome = true) then
+   Sum.inr (h.getLeft?.get (x)) else
+   if y:(h.getRight?.isSome = true) then
+    Sum.inl (h.getRight?.get (y))
+   else
+   sorry
+
+/-
+Note that up to the names we have chosen for the variables, the definitions are identical to the proofs
+of the analogous propositions for conjunction and disjunction.
+
+The cases tactic will also do a case distinction on a natural number:
+-/
+--example of cases for an inductive type
+
+section
+open Nat
+
+example (P : Nat → Prop) (h₀ : P 0) (h₁ : ∀ n, P (succ n)) (m : Nat) : P m := by
+  cases m with
+  | zero    => exact h₀
+  | succ m' => exact h₁ m'
+
+--my example
+
+example (P : Nat → Prop) (h₀ : P 0) (h₁ : ∀ n, P (succ n)) (m : Nat) : P m := by --proof of P by induction
+  revert m
+  intro k
+  cases k with
+  | zero    => exact h₀
+  | succ k' => exact h₁ k'
+end
+
+/-
+The cases tactic, and its companion, the induction tactic, are discussed in
+greater detail in the Tactics for Inductive Types section.
+
+The contradiction tactic searches for a contradiction among the hypotheses of the current goal:
+-/
+example (p q : Prop) : p ∧ ¬ p → q := by
+  intro h --intro p ∧ ¬p ;
+  cases h --cases for p ∧ ¬p ; hp ,hnp
+  contradiction --contrdiction using hnp hp.elim
+
+--my versions
+
+example (p q : Prop) : p ∧ ¬ p → q :=
+fun h:_ => (h.2 h.1).elim
+
+/-
+You can also use match in tactic blocks.
+-/
+example (p q r : Prop) : p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r) := by
+  apply Iff.intro
+  . intro h --intoducing h:p ∧ (q ∨ r)
+    match h with
+    | ⟨_, Or.inl _⟩ => apply Or.inl; constructor <;> assumption
+    | ⟨_, Or.inr _⟩ => apply Or.inr; constructor <;> assumption
+  . intro h
+    match h with
+    | Or.inl ⟨hp, hq⟩ => constructor; exact hp; apply Or.inl; exact hq
+    | Or.inr ⟨hp, hr⟩ => constructor; exact hp; apply Or.inr; exact hr
+
+/-
+You can "combine" intro h with match h ... and write the previous examples as follows
+-/
+
+example (p q r : Prop) : p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r) := by
+  apply Iff.intro
+  . intro
+    | ⟨hp, Or.inl hq⟩ => apply Or.inl; constructor <;> assumption
+    | ⟨hp, Or.inr hr⟩ => apply Or.inr; constructor <;> assumption
+  . intro
+    | Or.inl ⟨hp, hq⟩ => constructor; assumption; apply Or.inl; assumption
+    | Or.inr ⟨hp, hr⟩ => constructor; assumption; apply Or.inr; assumption
