@@ -1,3 +1,5 @@
+
+
 /-
 Some additional tactics are useful for constructing and destructing propositions and data.
 
@@ -221,6 +223,7 @@ example (p q : Nat → Prop) : (∃ x, p x) → ∃ x, p x ∨ q x := by
   apply Or.inl
   apply hpa
 
+#check Sum.casesOn
 /-
 Here is another example:
 -/
@@ -265,6 +268,8 @@ def swap_sum_tctless: Sum α β → Sum β α :=
     Sum.inl (h.getRight?.get (y))
    else
    sorry
+
+
 
 /-
 Note that up to the names we have chosen for the variables, the definitions are identical to the proofs
