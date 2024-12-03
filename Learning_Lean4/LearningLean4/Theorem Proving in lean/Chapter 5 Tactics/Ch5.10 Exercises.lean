@@ -6,12 +6,50 @@ and redo as many as you can now with tactic proofs, using also rw and simp as ap
 variable (p q r : Prop)
 
 -- commutativity of ∧ and ∨
-example : p ∧ q ↔ q ∧ p := sorry
-example : p ∨ q ↔ q ∨ p := sorry
+example : p ∧ q ↔ q ∧ p := by 
+constructor; repeat (intro h; simp [h])
+
+--v1
+example : p ∨ q ↔ q ∨ p := by
+constructor;
+. intro h
+  cases h
+  case mp.inl k => apply Or.inr k
+  case mp.inr k =>  apply Or.inl k
+. intro h
+  cases h
+  case mpr.inl k => apply Or.inr k
+  case mpr.inr k =>  apply Or.inl k
+--v2
+example : p ∨ q ↔ q ∨ p := by
+constructor <;> intro h; 
+repeat (first|cases h|case _ k => apply Or.inr k|case _ k =>  apply Or.inl k)
+
+
 
 -- associativity of ∧ and ∨
-example : (p ∧ q) ∧ r ↔ p ∧ (q ∧ r) := sorry
-example : (p ∨ q) ∨ r ↔ p ∨ (q ∨ r) := sorry
+--v1
+example : (p ∧ q) ∧ r ↔ p ∧ (q ∧ r) := by
+constructor;
+. intro h
+  simp at h
+  simp [*]
+. intro h
+  simp at h
+  simp [*]
+
+--v2
+example : (p ∧ q) ∧ r ↔ p ∧ (q ∧ r) := by
+constructor <;> (intro h; simp at h; simp [*])
+
+
+
+example : (p ∨ q) ∨ r ↔ p ∨ (q ∨ r) := by
+constructor;
+. intro h
+  simp at h
+  cases h
+  .
 
 -- distributivity
 example : p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r) := sorry
