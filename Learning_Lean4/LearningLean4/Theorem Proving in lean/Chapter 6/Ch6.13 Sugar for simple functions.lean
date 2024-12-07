@@ -18,7 +18,7 @@ Here are a few examples:
 def f (x y z : Nat) :=
   x + y + z
 
-#check (f · 1 ·)
+#check (f . 1 .) --normal dots also work
 -- fun a b => f a 1 b
 
 #eval [(1, 2), (3, 4), (5, 6)].map (·.1) -- maps to the first element
