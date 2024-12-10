@@ -174,7 +174,9 @@ cases as
 def reverse (as: List α): List α :=
 match as with
 | List.nil => List.nil
-| List.cons a bs => sorry
+| List.cons a bs => match bs with
+                    | List.nil => List.cons a []
+                    | List.cons b tbs => (reverse tbs).append [b,a]
 
 def reverse_tactic (as: List α): List α := by
 cases as
