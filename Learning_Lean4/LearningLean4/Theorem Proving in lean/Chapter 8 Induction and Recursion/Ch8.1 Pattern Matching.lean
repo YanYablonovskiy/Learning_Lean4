@@ -1,7 +1,8 @@
 /-
 Induction and Recursion:
 
-In the previous chapter, we saw that inductive definitions provide a powerful means of introducing new types in Lean.
+In the previous chapter, we saw that inductive definitions provide a powerful means of introducing new types
+in Lean.
 
 Moreover, the constructors and the recursors provide the only means of defining functions on these types.
 
@@ -197,10 +198,10 @@ def foo1 : Nat → Nat → Nat
 Here is another example:
 -/
 def bar : List Nat → List Nat → Nat
-  | [],      []      => 0
-  | a :: as, []      => a  --constructor with a as argument; a :: as
-  | [],      b :: bs => b
-  | a :: as, b :: bs => a + b
+  | [],      []      => 0  --both no head-tails
+  | a :: as, []      => a  --constructor with a as argument; a :: as, one head-tail, one no head-tail
+  | [],      b :: bs => b  --other head-tail; first one no head-tail
+  | a :: as, b :: bs => a + b --last possibility, both head-tail
 
 --function that returns the sum of the heads of two lists
 -- defined as 0 if the list is empty
@@ -208,5 +209,72 @@ def bar : List Nat → List Nat → Nat
 /-
 Note that the patterns are separated by commas.
 
-In each of the following examples, splitting occurs on only the first argument, even though the others are included among the list of patterns.
+In each of the following examples, splitting occurs on only the first argument,
+even though the others are included among the list of patterns.
+-/
+def and : Bool → Bool → Bool
+  | true,  a => a
+  | false, _ => false
+
+def or : Bool → Bool → Bool
+  | true,  _ => true
+  | false, a => a
+
+def cond : Bool → α → α → α
+  | true,  x, y => x
+  | false, x, y => y
+
+
+-- also works without _
+
+def and_ : Bool → Bool → Bool
+  | true,  a => a
+  | false, b => false
+
+def cond_ : Bool → α → α → α
+  | true,  x, y => x --covers all cases for first being true
+  | false, x, y => y -- covers all cases for first being false; and hence exhausts cases
+
+/-
+Notice also that, when the value of an argument is not needed in the definition,
+you can use an underscore instead.
+
+This underscore is known as a wildcard pattern, or an anonymous variable.
+
+In contrast to usage outside the equation compiler, here the underscore does
+not indicate an implicit argument.
+
+The use of underscores for wildcards is common in functional programming languages,
+and so Lean adopts that notation.
+
+Section Wildcards and Overlapping Patterns expands on the notion of a wildcard,
+and Section Inaccessible Patterns explains how you can use implicit arguments in patterns as well.
+
+As described in Chapter Inductive Types, inductive data types can depend on parameters.
+
+The following example defines the tail function using pattern matching.
+
+The argument α : Type u is a parameter and occurs before the colon to indicate it
+does not participate in the pattern matching.
+
+Lean also allows parameters to occur after :, but it cannot pattern match on them.
+-/
+
+
+def tail1 {α : Type u} : List α → List α
+  | []      => []
+  | a :: as => as
+
+def tail2 : {α : Type u} → List α → List α
+  | α, []      => []
+  | α, a :: as => as
+
+/-
+Despite the different placement of the parameter α in these two examples,
+in both cases it is treated in the same way, in that it does not participate in a case split.
+
+Lean can also handle more complex forms of pattern matching, in which arguments to dependent
+types pose additional constraints on the various cases.
+
+Such examples of dependent pattern matching are considered in the Section Dependent Pattern Matching.
 -/
