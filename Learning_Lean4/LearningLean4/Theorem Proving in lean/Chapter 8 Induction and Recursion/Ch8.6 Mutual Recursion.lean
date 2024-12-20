@@ -18,7 +18,7 @@ mutual
 end
 
 example : even (a + 1) = odd a := by
-  simp [even]
+  simp [even] --applying even to a+1, which is of form succ hence odd a
 
 example : odd (a + 1) = even a := by
   simp [odd]
@@ -101,10 +101,17 @@ and the command open Even Odd allows us to access them more conveniently.
 open Even Odd
 
 theorem not_odd_zero : ¬ Odd 0 :=
-  fun h => nomatch h
+  fun h => nomatch h --showing no constructors for Odd Zero
 
 theorem even_of_odd_succ : ∀ n, Odd (n + 1) → Even n
-  | _, odd_succ n h => h
+  | _, Odd.odd_succ n h => h
+
+
+--my version
+theorem even_of_odd_succ1 : ∀ n, Odd (n + 1) → Even n := by
+intro n h
+cases h
+. case odd_succ a => exact a
 
 theorem odd_of_even_succ : ∀ n, Even (n + 1) → Odd n
   | _, even_succ n h => h
@@ -127,7 +134,7 @@ namespace Term
 mutual
   def numConsts : Term → Nat
     | const _ => 1
-    | app _ cs => numConstsLst cs
+    | app _ cs => numConstsLst cs --structurally smaller, allowing for structural recursion
 
   def numConstsLst : List Term → Nat
     | [] => 0
