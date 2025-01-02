@@ -150,13 +150,42 @@ Let us start with the first step of the program above, declaring an appropriate 
 namespace ex
 
 class Inhabited (a : Type u) where
-  default : a
+  default : a --a term of type a
 
 #check @Inhabited.default
 -- Inhabited.default : {a : Type u} → [self : Inhabited a] → a
 
-end ex
+
 
 /-
 Note Inhabited.default doesn't have any explicit arguments.
 -/
+
+/-
+An element of the class Inhabited a is simply an expression of the form Inhabited.mk x, for some element x : a. 
+
+The projection Inhabited.default will allow us to "extract" such an element of a from an element of Inhabited a. 
+
+Now we populate the class with some instances:
+-/
+instance : Inhabited Bool where
+  default := true
+
+instance : Inhabited Nat where
+  default := 0
+
+instance : Inhabited Unit where
+  default := ()
+
+instance : Inhabited Prop where
+  default := True
+
+#eval (Inhabited.default : Nat)
+-- 0
+
+#eval (Inhabited.default : Bool)
+-- true
+
+
+end ex
+
