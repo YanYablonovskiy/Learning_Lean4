@@ -120,7 +120,7 @@ variable (NTree: (RootedTree.mk Nat))
 #check (inferInstance: Bot Nat)
 
 
-
+#eval (Bot.bot: Nat)
 
 
 
