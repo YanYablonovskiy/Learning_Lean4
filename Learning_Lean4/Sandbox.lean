@@ -8,19 +8,19 @@ import Mathlib.Combinatorics.SimpleGraph.Acyclic
 set_option linter.docPrime false
 universe v
 
--- def depth {t: RootedTree} (v:t.α): Nat := 
+-- def depth {t: RootedTree} (v:t.α): Nat :=
 --   let j := 0;
---   let rec loop: t.α → Nat → Nat 
+--   let rec loop: t.α → Nat → Nat
 --     | x, j => loop (t.predOrder.pred x) j+1;
 --   termination_by t.predOrder by
-  
-  
+
+
 variables {M: Finset α} {T : SimpleGraph M} (h : T.IsAcyclic)
-  
 
 
 
---variable (α: Type v) (A: Set A) 
+
+--variable (α: Type v) (A: Set A)
 --variable [SA: SemilatticeInf A] [OA: OrderBot A] [PA :PredOrder A]
 --variable [IPA: IsPredArchimedean A]
 
@@ -51,9 +51,9 @@ variable (r : t.α)
 #check Preorder
 #print Preorder
 
-#check RootedTree.mk 
+#check RootedTree.mk
 #check OrderBot
-#check RootedTree 
+#check RootedTree
 #print RootedTree
 
 /-
@@ -71,6 +71,53 @@ orderBot : OrderBot ↑self
 predOrder : PredOrder ↑self
 isPredArchimedean : IsPredArchimedean ↑self
 -/
+
+
+
+#synth Preorder Nat
+#check Preorder Nat
+#check PredOrder Nat
+
+#synth SemilatticeInf Nat
+--#check RootedTree.mk Nat
+
+
+
+
+instance: PredOrder Nat where
+ pred := fun (n: Nat) =>
+  match n with
+  | Nat.zero => Nat.zero
+  | Nat.succ k => k
+ pred_le := by intro a; cases a with
+ | zero => rfl
+ | succ _ => simp
+ min_of_le_pred := by intro a; cases a with
+ | zero => simp
+ | succ _ => simp
+ le_pred_of_lt := by intro a; cases a with
+ | zero => simp
+ | succ k => simp_arith; intro b; cases b with
+  | zero => intro k; contradiction
+  | succ m => simp; apply Nat.succ_le_of_lt
+
+#synth PredOrder Nat
+
+
+
+instance: Bot Nat where
+bot := Nat.zero
+
+instance: OrderBot Nat where
+bot_le := by intro a; simp
+
+#check RootedTree.mk Nat
+
+variable (NTree: (RootedTree.mk Nat))
+
+#check OrderBot Nat
+#check Bot Nat
+#check (inferInstance: Bot Nat)
 
 
 
@@ -117,9 +164,27 @@ bot_le : ∀ (a : α), ⊥ ≤ a
 #check LE
 #print LE
 
-def IsCutset (S: Finset t.α): Prop := 
- (∀ v:t.α, (∃p:S,p ≤ v ∨ p ≥ v)) 
+def IsCutset (S: Finset t.α): Prop :=
+ (∀ v:t.α, (∃p:S,p ≤ v ∨ p ≥ v))
 
+def IsCutset' {t: RootedTree} (S: Finset t.α): Prop :=
+(∀ v:t.α, (∃p:S,p ≤ v ∨ p ≥ v))
+
+#check IsCutset
+
+#check RootedTree.mk Nat
+#check @IsCutset' (RootedTree.mk Nat)
+
+#check inferInstance
+theorem numberisCutset  (n: Nat): @IsCutset (RootedTree.mk Nat) {n} := by
+ intro NC; simp; cases n
+ . case zero => simp
+ . case succ j => apply Nat.le_or_ge
+
+instance: Inhabited RootedTree where
+default := RootedTree.mk Nat
+
+#check @numberisCutset
 
 variable (S5: Finset α)
 #check sizeOf
@@ -131,14 +196,14 @@ variable (r:t.α)
 #check Order.pred^[5]
 --#check @Nat.find exists_pred_iterate_or (bot_le (a := r))
 --Nat.find (bot_le (a := r)).exists_pred_iterate
---#check Nat.find (Exists.intro ) (bot_le (a := r)) 
+--#check Nat.find (Exists.intro ) (bot_le (a := r))
 #check IsCutset
 #check {A:Finset t.α | IsCutset A}
 
 variable (x:{A:Finset t | IsCutset A})
 variable (x1:{A:Finset t.α | IsCutset A})
 
-def TreeDistance (a: t.α) (b: t.α): Nat := by 
+def TreeDistance (a: t.α) (b: t.α): Nat := by
 let r := t.semilatticeInf.inf a b;
 admit
 
@@ -157,4 +222,3 @@ let All_Cutsets :=  {A:Finset t.α | IsCutset A};
 let Cutset_Sum (l: Real) (X: Finset (t.α)) (hc: IsCutset X): Real :=
  Finset.sum X d;
 admit
- 
