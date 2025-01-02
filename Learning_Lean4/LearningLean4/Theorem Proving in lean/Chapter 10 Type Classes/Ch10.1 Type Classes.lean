@@ -186,6 +186,18 @@ instance : Inhabited Prop where
 #eval (Inhabited.default : Bool)
 -- true
 
+/-
+You can use the command export to create the alias default for 
+Inhabited.default
+-/
+
+export Inhabited (default)
+
+#eval (default : Nat)
+-- 0
+
+#eval (default : Bool)
+-- true
 
 end ex
 
