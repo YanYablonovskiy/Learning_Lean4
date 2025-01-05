@@ -114,6 +114,74 @@ theorem inter.comm (a b : Set α) : a ∩ b = b ∩ a :=
 The following is an example of how function extensionality blocks
 computation inside the Lean kernel:
 -/
+def f (x : Nat) := x
+def g (x : Nat) := 0 + x
+
+theorem f_eq_g : f = g :=
+  funext fun x => (Nat.zero_add x).symm
+
+def val : Nat :=
+  Eq.recOn (motive := fun _ _ => Nat) f_eq_g 0
+
+-- does not reduce to 0
+#reduce val
+
+-- evaluates to 0
+#eval val
+
+
+/-
+First, we show that the two functions f and g are equal using function extensionality,
+and then we cast 0 of type Nat by replacing f by g in the type.
+
+Of course, the cast is vacuous, because Nat does not depend on f.
+
+But that is enough to do the damage: under the computational rules of the system,
+we now have a closed term of Nat that does not reduce to a numeral.
+
+In this case, we may be tempted to reduce the expression to 0.
+
+But in nontrivial examples, eliminating cast changes the type of the term,
+which might make an ambient expression type incorrect.
+
+The virtual machine, however, has no trouble evaluating the expression to 0.
+
+Here is a similarly contrived example that shows how propext can get in the way:
+-/
+
+theorem tteq : (True ∧ True) = True :=
+  propext (Iff.intro (fun ⟨h, _⟩ => h) (fun h => ⟨h, h⟩))
+
+def val' : Nat :=
+  Eq.recOn (motive := fun _ _ => Nat) tteq 0
+
+-- does not reduce to 0
+#reduce val'
+
+-- evaluates to 0
+#eval val'
+
+/-
+Current research programs, including work on observational type theory
+and cubical type theory, aim to extend type theory in ways that permit
+reductions for casts involving function extensionality, quotients, and more.
+
+But the solutions are not so clear-cut, and the rules of Lean's underlying calculus
+do not sanction such reductions.
+
+In a sense, however, a cast does not change the meaning of an expression.
+
+Rather, it is a mechanism to reason about the expression's type.
+
+Given an appropriate semantics, it then makes sense to reduce terms in ways that
+preserve their meaning, ignoring the intermediate bookkeeping needed to make
+the reductions type-correct.
+
+In that case, adding new axioms in Prop does not matter; by proof irrelevance,
+an expression in Prop carries no information, and can be safely ignored by
+the reduction procedures.
+-/
+
 
 
 end Set
