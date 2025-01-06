@@ -36,6 +36,9 @@ axiom Quot.lift :
     {α : Sort u} → {r : α → α → Prop} → {β : Sort u} → (f : α → β)
     → (∀ a b, r a b → f a = f b) → (Quot r → β)
 
+--dont need to be axioms
+
+
 /-
 
 The first one forms a type Quot r given a type α by any binary relation r on α.
@@ -55,5 +58,167 @@ In fact, the computation principle is declared as a reduction rule, as the proof
 makes clear.
 
 -/
+end ex
+def mod7Rel (x y : Nat) : Prop :=
+  x % 7 = y % 7
+
+-- the quotient type
+#check (Quot mod7Rel : Type)
+
+-- the class of a
+#check (Quot.mk mod7Rel 4 : Quot mod7Rel)
+
+def f (x : Nat) : Bool :=
+  x % 7 = 0
+
+theorem f_respects (a b : Nat) (h : mod7Rel a b) : f a = f b := by
+  simp [mod7Rel, f] at *
+  rw [h]
+
+#check (Quot.lift f f_respects : Quot mod7Rel → Bool)
+
+-- the computation principle
+example (a : Nat) : Quot.lift f f_respects (Quot.mk mod7Rel a) = f a :=
+  rfl
+
+
+/-
+The four constants, Quot, Quot.mk, Quot.ind, and Quot.lift in and of themselves are not
+very strong.
+
+You can check that the Quot.ind is satisfied if we take Quot r to be simply α,
+and take Quot.lift to be the identity function (ignoring h).
+
+For that reason, these four constants are not viewed as additional axioms.
+
+They are, like inductively defined types and the associated constructors and recursors,
+viewed as part of the logical framework.
+
+What makes the Quot construction into a bona fide quotient is the following
+additional axiom:
+
+-/
+namespace ex
+universe u
+axiom Quot.sound :
+      ∀ {α : Type u} {r : α → α → Prop} {a b : α},
+        r a b → Quot.mk r a = Quot.mk r b
+
+/-
+
+This is the axiom that asserts that any two elements of α that are related by r become
+identified in the quotient.
+
+If a theorem or definition makes use of Quot.sound, it will show up in the #print axioms
+command.
+
+-/
+
+
+/-
+Of course, the quotient construction is most commonly used in situations when r is an
+equivalence relation.
+
+Given r as above, if we define r' according to the rule r' a b iff Quot.mk r a = Quot.mk r b,
+then it's clear that r' is an equivalence relation.
+
+Indeed, r' is the kernel of the function a ↦ quot.mk r a.
+
+The axiom Quot.sound says that r a b implies r' a b.
+
+Using Quot.lift and Quot.ind, we can show that r' is the smallest
+equivalence relation containing r, in the sense that if r'' is any equivalence
+relation containing r, then r' a b implies r'' a b.
+
+In particular, if r was an equivalence relation to start with, then for
+all a and b we have r a b iff r' a b.
+-/
+
+/-
+To support this common use case, the standard library defines the notion of a setoid,
+which is simply a type with an associated equivalence relation:
+-/
+
+class Setoid (α : Sort u) where
+  r : α → α → Prop
+  iseqv : Equivalence r
+
+instance {α : Sort u} [Setoid α] : HasEquiv α :=
+  ⟨Setoid.r⟩
+
+namespace Setoid
+
+variable {α : Sort u} [Setoid α]
+
+theorem refl (a : α) : a ≈ a :=
+  iseqv.refl a
+
+theorem symm {a b : α} (hab : a ≈ b) : b ≈ a :=
+  iseqv.symm hab
+
+theorem trans {a b c : α} (hab : a ≈ b) (hbc : b ≈ c) : a ≈ c :=
+  iseqv.trans hab hbc
+
+end Setoid
+
+/-
+Given a type α, a relation r on α, and a proof p that r is an equivalence relation,
+we can define Setoid.mk r p as an instance of the setoid class.
+-/
+def Quotient {α : Sort u} (s : Setoid α) :=
+  @Quot α Setoid.r
+
+
+/-
+The constants Quotient.mk, Quotient.ind, Quotient.lift, and Quotient.sound are nothing
+more than the specializations of the corresponding elements of Quot.
+
+The fact that type class inference can find the setoid associated to a type α brings
+a number of benefits.
+
+First, we can use the notation a ≈ b (entered with \approx) for Setoid.r a b,
+where the instance of Setoid is implicit in the notation Setoid.r.
+
+We can use the generic theorems Setoid.refl, Setoid.symm, Setoid.trans
+to reason about the relation.
+
+Specifically with quotients we can use the generic notation ⟦a⟧ for Quot.mk Setoid.r
+where the instance of Setoid is implicit in the notation Setoid.r,
+as well as the theorem Quotient.exact:
+
+-/
+
 
 end ex
+
+universe u
+#check (@Quotient.exact :
+         ∀ {α : Sort u} {s : Setoid α} {a b : α},
+           Quotient.mk s a = Quotient.mk s b → a ≈ b)
+
+/-
+Together with Quotient.sound, this implies that the elements of the quotient correspond exactly to the equivalence classes of elements in α.
+
+Recall that in the standard library, α × β represents the Cartesian product of the types
+α and β.
+
+To illustrate the use of quotients, let us define the type of unordered pairs of
+elements of a type α as a quotient of the type α × α.
+
+First, we define the relevant equivalence relation:
+-/
+
+private def eqv (p₁ p₂ : α × α) : Prop :=
+  (p₁.1 = p₂.1 ∧ p₁.2 = p₂.2) ∨ (p₁.1 = p₂.2 ∧ p₁.2 = p₂.1)
+
+infix:50 " ~ " => eqv
+
+/-
+The next step is to prove that eqv is in fact an equivalence relation, which is to say,
+it is reflexive, symmetric and transitive.
+
+We can prove these three facts in a convenient and readable way by using dependent pattern
+matching to perform case-analysis and break the hypotheses into pieces that are then
+reassembled to produce the conclusion.
+
+-/
