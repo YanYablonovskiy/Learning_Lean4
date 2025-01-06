@@ -8,17 +8,17 @@ import Mathlib.Combinatorics.SimpleGraph.Acyclic
 set_option linter.docPrime false
 universe v
 
--- def depth {t: RootedTree} (v:t.α): Nat :=
---   let j := 0;
---   let rec loop: t.α → Nat → Nat
---     | x, j => loop (t.predOrder.pred x) j+1;
---   termination_by t.predOrder by
+
+
+
 
 
 variables {M: Finset α} {T : SimpleGraph M} (h : T.IsAcyclic)
 
+#check Nat.find (H:= LE.le.exists_pred_iterate _)
 
-
+#check IsPredArchimedean
+#print IsPredArchimedean
 
 --variable (α: Type v) (A: Set A)
 --variable [SA: SemilatticeInf A] [OA: OrderBot A] [PA :PredOrder A]
@@ -170,6 +170,12 @@ def IsCutset (S: Finset t.α): Prop :=
 def IsCutset' {t: RootedTree} (S: Finset t.α): Prop :=
 (∀ v:t.α, (∃p:S,p ≤ v ∨ p ≥ v))
 
+-- def Depth (v: t.α): Nat := by
+--  let r := t.orderBot.bot;
+--  let j := 0;
+--  let rec loop: Nat → t.α
+
+
 #check IsCutset
 
 #check RootedTree.mk Nat
@@ -199,13 +205,28 @@ variable (r:t.α)
 --#check Nat.find (Exists.intro ) (bot_le (a := r))
 #check IsCutset
 #check {A:Finset t.α | IsCutset A}
+variable [DecidableEq t.α]
+open IsPredArchimedean
 
+#check Nat.find (bot_le (a := r)).exists_pred_iterate
+variable (NC: RootedTree.mk ℕ)
 variable (x:{A:Finset t | IsCutset A})
 variable (x1:{A:Finset t.α | IsCutset A})
 
 def TreeDistance (a: t.α) (b: t.α): Nat := by
 let r := t.semilatticeInf.inf a b;
 admit
+
+
+def depth (a: t.α): Nat :=
+ Nat.find (bot_le (a := a)).exists_pred_iterate
+
+
+#check @depth
+
+
+def Udistance (v₁ : t.α) (v₂ : t.α) (h: v₁ ≤ v₂): Nat :=
+ sorry
 
 
 def d {t:RootedTree} (v:t.α): Real := 1
