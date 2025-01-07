@@ -222,3 +222,133 @@ matching to perform case-analysis and break the hypotheses into pieces that are 
 reassembled to produce the conclusion.
 
 -/
+
+private theorem eqv.refl (p : α × α) : p ~ p :=
+  Or.inl ⟨rfl, rfl⟩
+
+private theorem eqv.symm : ∀ {p₁ p₂ : α × α}, p₁ ~ p₂ → p₂ ~ p₁
+  | (a₁, a₂), (b₁, b₂), (Or.inl ⟨a₁b₁, a₂b₂⟩) =>
+    Or.inl (by simp_all)
+  | (a₁, a₂), (b₁, b₂), (Or.inr ⟨a₁b₂, a₂b₁⟩) =>
+    Or.inr (by simp_all)
+
+private theorem eqv.trans : ∀ {p₁ p₂ p₃ : α × α}, p₁ ~ p₂ → p₂ ~ p₃ → p₁ ~ p₃
+  | (a₁, a₂), (b₁, b₂), (c₁, c₂), Or.inl ⟨a₁b₁, a₂b₂⟩, Or.inl ⟨b₁c₁, b₂c₂⟩ =>
+    Or.inl (by simp_all)
+  | (a₁, a₂), (b₁, b₂), (c₁, c₂), Or.inl ⟨a₁b₁, a₂b₂⟩, Or.inr ⟨b₁c₂, b₂c₁⟩ =>
+    Or.inr (by simp_all)
+  | (a₁, a₂), (b₁, b₂), (c₁, c₂), Or.inr ⟨a₁b₂, a₂b₁⟩, Or.inl ⟨b₁c₁, b₂c₂⟩ =>
+    Or.inr (by simp_all)
+  | (a₁, a₂), (b₁, b₂), (c₁, c₂), Or.inr ⟨a₁b₂, a₂b₁⟩, Or.inr ⟨b₁c₂, b₂c₁⟩ =>
+    Or.inl (by simp_all)
+
+private theorem is_equivalence : Equivalence (@eqv α) :=
+  { refl := eqv.refl, symm := eqv.symm, trans := eqv.trans }
+
+/-
+Now that we have proved that eqv is an equivalence relation, we can construct a
+Setoid (α × α), and use it to define the type UProd α of unordered pairs.
+-/
+
+
+instance uprodSetoid (α : Type u) : Setoid (α × α) where
+  r     := eqv
+  iseqv := is_equivalence
+
+def UProd (α : Type u) : Type u :=
+  Quotient (uprodSetoid α)
+
+namespace UProd
+
+def mk {α : Type} (a₁ a₂ : α) : UProd α :=
+  Quotient.mk' (a₁, a₂)
+
+notation "{ " a₁ ", " a₂ " }" => mk a₁ a₂
+
+end UProd
+
+/-
+Notice that we locally define the notation {a₁, a₂} for unordered pairs as
+Quotient.mk (a₁, a₂).
+
+This is useful for illustrative purposes, but it is not a good idea in general,
+since the notation will shadow other uses of curly brackets, such as for records and sets.
+
+We can easily prove that {a₁, a₂} = {a₂, a₁} using Quot.sound, since we have
+(a₁, a₂) ~ (a₂, a₁).
+
+
+-/
+
+theorem mk_eq_mk (a₁ a₂ : α) : {a₁, a₂} = {a₂, a₁} :=
+  Quot.sound (Or.inr ⟨rfl, rfl⟩)
+
+
+/-
+To complete the example, given a : α and u : uprod α, we define the proposition a ∈ u
+which should hold if a is one of the elements of the unordered pair u.
+
+First, we define a similar proposition mem_fn a u on (ordered) pairs; then we show
+that mem_fn respects the equivalence relation eqv with the lemma mem_respects.
+
+This is an idiom that is used extensively in the Lean standard library.
+-/
+private def mem_fn (a : α) : α × α → Prop
+  | (a₁, a₂) => a = a₁ ∨ a = a₂
+
+-- auxiliary lemma for proving mem_respects
+private theorem mem_swap {a : α} :
+      ∀ {p : α × α}, mem_fn a p = mem_fn a (⟨p.2, p.1⟩)
+  | (a₁, a₂) => by
+    apply propext
+    apply Iff.intro
+    . intro
+      | Or.inl h => exact Or.inr h
+      | Or.inr h => exact Or.inl h
+    . intro
+      | Or.inl h => exact Or.inr h
+      | Or.inr h => exact Or.inl h
+
+
+private theorem mem_respects
+      : {p₁ p₂ : α × α} → (a : α) → p₁ ~ p₂ → mem_fn a p₁ = mem_fn a p₂
+  | (a₁, a₂), (b₁, b₂), a, Or.inl ⟨a₁b₁, a₂b₂⟩ => by simp_all
+  | (a₁, a₂), (b₁, b₂), a, Or.inr ⟨a₁b₂, a₂b₁⟩ => by simp_all; apply propext_iff.mp; apply mem_swap
+
+def mem (a : α) (u : UProd α) : Prop :=
+  Quot.liftOn u (fun p => mem_fn a p) (fun p₁ p₂ e => mem_respects a e)
+
+infix:50 (priority := high) " ∈ " => mem
+
+theorem mem_mk_left (a b : α) : a ∈ {a, b} :=
+  Or.inl rfl
+
+theorem mem_mk_right (a b : α) : b ∈ {a, b} :=
+  Or.inr rfl
+
+theorem mem_or_mem_of_mem_mk {a b c : α} : c ∈ {a, b} → c = a ∨ c = b :=
+  fun h => h
+
+/-
+For convenience, the standard library also defines Quotient.lift₂ for lifting
+binary functions, and Quotient.ind₂ for induction on two variables.
+
+We close this section with some hints as to why the quotient construction implies
+function extensionality.
+
+It is not hard to show that extensional equality on the (x : α) → β x is an equivalence relation,
+and so we can consider the type extfun α β of functions "up to equivalence."
+
+Of course, application respects that equivalence in the sense that if f₁ is equivalent to f₂, then f₁ a is equal to f₂ a.
+
+Thus application gives rise to a function extfun_app : extfun α β → (x : α) → β x.
+
+But for every f, extfun_app ⟦f⟧ is definitionally equal to fun x => f x, which is in turn definitionally
+equal to f.
+
+So, when f₁ and f₂ are extensionally equal, we have the following chain of equalities:
+
+<    f₁ = extfun_app ⟦f₁⟧ = extfun_app ⟦f₂⟧ = f₂ >
+
+As a result, f₁ is equal to f₂.
+-/
