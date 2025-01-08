@@ -2,6 +2,7 @@ import Mathlib.Data.Finset.Basic
 import Mathlib.Order.SuccPred.Tree
 import Mathlib.Data.Set.Defs
 import Mathlib.Data.Real.Basic
+import Mathlib.Data.Real.Archimedean
 import Mathlib.Data.Finite.Defs
 import Mathlib.Combinatorics.SimpleGraph.Acyclic
 
@@ -29,8 +30,33 @@ variable (k:ℝ)  (Cutset_Set: { S: Finset T.α | Cutset S})
 #check Cutset_exponent (b:=k)
 #check Cutset_Set.map (Cutset_exponent (b:=k)) (h:=_) (q:= fun x:ℝ => x >0) (p:= fun _ => Cutset _)
 
-#check { S: Finset T.α | Cutset S}
+
+noncomputable def CutsetSumSeq (f:T.α → ℝ) (S: Nat → Finset T.α) (hC: ∀n, Cutset (S n)): ℕ → ℝ :=
+ fun (m:Nat) => Cutset_sum f (S m)
+
+noncomputable def CutsetExpSumSeq (S: Nat → Finset T.α) (hC: ∀n, Cutset (S n)): ℝ → (ℕ → ℝ) :=
+ fun (e:ℝ) => fun (m:ℕ) => Cutset_exponent (b:=e) (S m)
+
+def InfGTZero (e:ℝ) (S: Nat → Finset T.α) (hC: ∀n, Cutset (S n)) : Prop :=
+ iInf ((CutsetExpSumSeq S hC) e) > 0
 
 
-noncomputable def CutsetSeq (exp:ℝ) (S: Nat → Finset T.α) (hC: ∀n, Cutset (S n)): ℕ → ℝ :=
- fun (m:Nat) => Cutset_exponent (b:=exp) (S m)
+def GTZeroSet  (S: Nat → Finset T.α) (hC: ∀n, Cutset (S n)): Set ℝ :=
+{ (x:ℝ) | InfGTZero x S hC}
+
+variable {CutSetSeqs: Nat → Finset T.α}   (hC: ∀n, Cutset (CutSetSeqs n))
+
+noncomputable def BranchingNumber: ℝ :=
+ SupSet.sSup (GTZeroSet CutSetSeqs hC)
+
+#check BranchingNumber
+
+
+
+#check SupSet.sSup (GTZeroSet CutSetSeqs hC)
+
+--need Inf over e, where inf over cutsets
+
+
+
+#check iInf (CutsetSumSeq _ _ _)
