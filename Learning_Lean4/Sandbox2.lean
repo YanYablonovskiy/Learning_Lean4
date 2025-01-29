@@ -119,7 +119,7 @@ section RandomField
   #print RandomField'
   end Noncanonical
 
- section Canonical
+ section Canonicalold
   universe u v
   variable (Γ: Type v) (ε: Type u) --Γ is the countably infinite parameter set
                                                           --ε is the spin Space, and s i is the spin at site i
@@ -152,7 +152,7 @@ section RandomField
 
   #check σTCylinder
 
-  abbrev σTCylinders := { S: Set ((Ω Γ) ε) | ∀t ∈ (ℐ Γ), (σTCylinder Γ ε t)  ⊆ S}
+  abbrev σTCylinders := { S: Set ((Ω Γ) ε) | ∃t ∈ (ℐ Γ), (σTCylinder Γ ε t)  = S}
 
 
   #check MeasurableSpace.generateFrom (σTCylinders Γ ε)
@@ -164,17 +164,25 @@ section RandomField
    spinMeasurableSpace := E
 
 
- end Canonical
+ end Canonicalold
 
 end RandomField
 
 
-section
-  universe v
-  variable {Γ: Type v} [Countable Γ]
+section CanonicalRandomField
+universe u v
+variable (Γ: Type u) (ε: Type v) [Countable Γ] (E:MeasurableSpace ε)
 
+abbrev Ω' {G: Type u} [Countable G] {ε: Type v} := (G → ε)
+abbrev F' {G: Type u} [Countable G]: Set (Finset G) := { s:Finset G | Finset.Nonempty s}
 
+abbrev pre_image (k: F' (G:=Γ)): Set (Ω' (ε:=ε) (G:=Γ)) := fun (g:Ω' (G:=Γ)) ↦ @MeasurableSet ε E (g '' (Finset.toSet k))
+abbrev pre_images: Set (Set (Ω' (ε:=ε) (G:=Γ))) := fun (k: _) ↦ ∃S:F' (G:=Γ),k = pre_image Γ ε E S
+#check pre_image
+class RandomField'' where
+   carrier := Γ
+   σAlgebra := MeasurableSpace.generateFrom (pre_images Γ ε E)
+   spinSpace := ε
+   spinMeasurableSpace := E
 
-
-
-end
+end CanonicalRandomField
