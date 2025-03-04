@@ -119,9 +119,13 @@ variable (test:DependanceType) (t1 t2: Finset (test.field.parameter)) (ht: t1 �
 
 #check (test.Specs t1)
 #check ProbabilityTheory.Kernel.comp
+#check ⇑(test.Specs t2)
 
-#check (ProbabilityTheory.Kernel.restrict (test.Specs t2) (s := t1) )
-#check @ProbabilityTheory.Kernel.comp (α := test.field.parameter → test.field.states) (β := test.field.parameter → test.field.states) (γ :=  test.field.parameter → test.field.states) (mα := test.field.MeasurableSpace) (mβ :=  (MeasureTheory.cylinderEvents (π := fun _ ↦ test.field.states) (Set.univ\(t1.toSet)))) (mγ :=  (MeasureTheory.cylinderEvents (π := fun _ ↦ test.field.states) (Set.univ\(t2.toSet))))  (test.Specs t2) (test.Specs t1)
+#check @(ProbabilityTheory.Kernel.restrict (test.Specs t2) (s := t1) )
+
+
+
+#check @ProbabilityTheory.Kernel.comp (α := test.field.parameter → test.field.states) (β := test.field.parameter → test.field.states) (γ :=  test.field.parameter → test.field.states) (mα := test.field.MeasurableSpace) (mβ :=  (MeasureTheory.cylinderEvents (π := fun _ ↦ test.field.states) (Set.univ\(t1.toSet)))) (mγ :=  (MeasureTheory.cylinderEvents (π := fun _ ↦ test.field.states) (Set.univ\(t2.toSet))))  (_) (test.Specs t1)
 --#check (test.Specs t1) ∘ₖ (test.Specs t1)
 #check (test.Specs t2)
 
