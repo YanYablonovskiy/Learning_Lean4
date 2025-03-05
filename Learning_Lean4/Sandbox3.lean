@@ -99,7 +99,7 @@ variable {M: RandomFieldSpace} (Λ: Finset M.parameter) [Nonempty Λ]
 #check @ProbabilityTheory.Kernel
 
 
-structure DependanceType where
+structure DependenceType where
  field : RandomFieldSpace
  Specs : (Λ: Finset field.parameter) → @ProbabilityTheory.Kernel (field.parameter → field.states) (field.parameter → field.states) field.MeasurableSpace (MeasureTheory.cylinderEvents (π := fun (i:field.parameter) ↦ field.states) (Set.univ\(Λ.toSet)))
 
@@ -111,7 +111,7 @@ open ProbabilityTheory
 
 open Kernel
 
-variable (test:DependanceType) (t1 t2: Finset (test.field.parameter)) (ht: t1 ⊆ t2)
+variable (test:DependenceType) (t1 t2: Finset (test.field.parameter)) (ht: t1 ⊆ t2)
 
 
 
@@ -132,7 +132,7 @@ variable (test:DependanceType) (t1 t2: Finset (test.field.parameter)) (ht: t1 �
 --#check (test.Specs t1).comp (test.Specs t2)
 --#check Specifications M
 
-structure Specification extends DependanceType where
+structure Specification extends DependenceType where
  consistency: ∀Λ₁ Λ₂: Finset field.parameter, (Λ₁ ⊆ Λ₂) → sorry
 
 #check MeasureTheory.generateFrom_squareCylinders
