@@ -121,7 +121,7 @@ variable (test:DependenceType) (t1 t2: Finset (test.field.parameter)) (ht: t1 âŠ
 #check ProbabilityTheory.Kernel.comp
 #check â‡‘(test.Specs t2)
 
-#check @(ProbabilityTheory.Kernel.restrict (test.Specs t2) (s := t1) )
+--#check @(ProbabilityTheory.Kernel.restrict (test.Specs t2) (s := t1) )
 
 
 
