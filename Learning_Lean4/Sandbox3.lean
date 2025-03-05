@@ -12,7 +12,9 @@ import Mathlib.MeasureTheory.Measure.MeasureSpaceDef
 import Mathlib.MeasureTheory.MeasurableSpace.Prod
 import Mathlib.Data.Set.Function
 import Mathlib.Probability.Kernel.Defs
-import Mathlib.Probability.Kernel.Composition
+import Mathlib.Probability.Kernel.Composition.Comp
+import Mathlib.Probability.Kernel.Proper
+
 
 section RandomField
 
@@ -134,6 +136,9 @@ variable (test:DependenceType) (t1 t2: Finset (test.field.parameter)) (ht: t1 �
 
 structure Specification extends DependenceType where
  consistency: ∀Λ₁ Λ₂: Finset field.parameter, (Λ₁ ⊆ Λ₂) → sorry
+ markov: ∀Λ: Finset field.parameter, ProbabilityTheory.IsMarkovKernel (Specs Λ)
+ proper: ∀Λ: Finset field.parameter, ProbabilityTheory.Kernel.IsProper (Specs Λ)
+
 
 #check MeasureTheory.generateFrom_squareCylinders
 -- #check MeasurableSpace (Set.univ\(Λ.toSet))
